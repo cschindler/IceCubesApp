@@ -84,7 +84,7 @@ public struct AccountDetailView: View {
                            client: client,
                            routerPath: routerPath)
         } else {
-          Text("Scheduled Statuses")
+          makeScheduledStatus()
         }
       }
       .environment(\.defaultMinListRowHeight, 0)
@@ -127,6 +127,7 @@ public struct AccountDetailView: View {
         HapticManager.shared.fireHaptic(.dataRefresh(intensity: 0.3))
         await viewModel.fetchAccount()
         await viewModel.fetchNewestStatuses(pullToRefresh: true)
+        await viewModel.fetchNewestScheduledStatuses(pullToRefresh: true)
         HapticManager.shared.fireHaptic(.dataRefresh(intensity: 0.7))
         SoundEffectManager.shared.playSound(.refresh)
       }
@@ -390,6 +391,17 @@ public struct AccountDetailView: View {
       #if canImport(_Translation_SwiftUI)
       .addTranslateView(isPresented: $showTranslateView, text: viewModel.account?.note.asRawText ?? "")
       #endif
+    }
+  }
+  @ViewBuilder
+  private func makeScheduledStatus() -> some View {
+    ForEach(viewModel.scheduledStatus) { status in
+      ScheduledStatusRowView(
+        viewModel: .init(
+          scheduledStatus: status,
+          currentAccount: viewModel.account ?? Account.placeholder(),
+          client: client)
+      )
     }
   }
 }

@@ -34,7 +34,7 @@ import SwiftUI
       case .replies: "bubble.left.and.bubble.right"
       case .boosts: ""
       case .media: "photo.on.rectangle.angled"
-      case .scheduled: "clock.arrow.circlepath"
+      case .scheduled: "clock"
       }
     }
 
@@ -72,6 +72,11 @@ import SwiftUI
         tabTask?.cancel()
         tabTask = Task {
           await fetchNewestStatuses(pullToRefresh: false)
+        }
+      case .scheduled:
+        tabTask?.cancel()
+        tabTask = Task {
+          await fetchNewestScheduledStatuses(pullToRefresh: false)
         }
       default:
         reloadTabState()
@@ -195,6 +200,15 @@ import SwiftUI
     }
   }
 
+  func fetchNewestScheduledStatuses(pullToRefresh _: Bool) async {
+    guard let client else { return }
+    do {
+      scheduledStatus = try await client.get(endpoint: ScheduledStatuses.scheduledStatuses(sinceId: nil))
+    } catch {
+      print("Error: \(error)")
+    }
+  }
+
   func fetchNextPage() async throws {
     guard let client else { return }
     switch selectedTab {
@@ -239,7 +253,6 @@ import SwiftUI
       guard let nextPageId = scheduledNextPage?.maxId else { return }
       let newScheduledStatus: [ScheduledStatus]
       (newScheduledStatus, scheduledNextPage) = try await client.getWithLink(endpoint: ScheduledStatuses.scheduledStatuses(sinceId: nextPageId))
-      //StatusDataControllerProvider.shared.updateDataControllers(for: newBookmarks, client: client)
       scheduledStatus.append(contentsOf: newScheduledStatus)
       //statusesState = .display(statuses: bookmarks, nextPageState: .hasNextPage)
     }
