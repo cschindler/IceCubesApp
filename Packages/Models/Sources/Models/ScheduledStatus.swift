@@ -36,7 +36,7 @@ public struct ScheduledParams: Codable, Equatable {
   public let idempotency: String?
   public let withRateLimit: Bool?
   public let poll: Poll?
-  public let applicationId: String?
+  public let applicationId: Int?
 }
 
 extension ScheduledStatus: Sendable {}
