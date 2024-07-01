@@ -79,9 +79,13 @@ public struct AccountDetailView: View {
         if viewModel.selectedTab == .statuses {
           pinnedPostsView
         }
-        StatusesListView(fetcher: viewModel,
-                         client: client,
-                         routerPath: routerPath)
+        if viewModel.selectedTab != .scheduled {
+          StatusesListView(fetcher: viewModel,
+                           client: client,
+                           routerPath: routerPath)
+        } else {
+          Text("Scheduled Statuses")
+        }
       }
       .environment(\.defaultMinListRowHeight, 0)
       .listStyle(.plain)

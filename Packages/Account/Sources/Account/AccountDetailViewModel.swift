@@ -16,10 +16,10 @@ import SwiftUI
   }
 
   enum Tab: Int {
-    case statuses, favorites, bookmarks, replies, boosts, media
+    case statuses, favorites, bookmarks, replies, boosts, media, scheduled
 
     static var currentAccountTabs: [Tab] {
-      [.statuses, .replies, .boosts, .favorites, .bookmarks]
+      [.statuses, .replies, .boosts, .favorites, .bookmarks, scheduled]
     }
 
     static var accountTabs: [Tab] {
@@ -34,6 +34,7 @@ import SwiftUI
       case .replies: "bubble.left.and.bubble.right"
       case .boosts: ""
       case .media: "photo.on.rectangle.angled"
+      case .scheduled: "clock.arrow.circlepath"
       }
     }
 
@@ -45,6 +46,7 @@ import SwiftUI
       case .replies: "accessibility.tabs.profile.picker.posts-and-replies"
       case .boosts: "accessibility.tabs.profile.picker.boosts"
       case .media: "accessibility.tabs.profile.picker.media"
+      case .scheduled: "accessibility.tabs.profile.picker.scheduled"
       }
     }
   }
@@ -56,8 +58,10 @@ import SwiftUI
   var pinned: [Status] = []
   var favorites: [Status] = []
   var bookmarks: [Status] = []
+  var scheduledStatus: [ScheduledStatus] = []
   private var favoritesNextPage: LinkHandler?
   private var bookmarksNextPage: LinkHandler?
+  private var scheduledNextPage: LinkHandler?
   var featuredTags: [FeaturedTag] = []
   var fields: [Account.Field] = []
   var familiarFollowers: [Account] = []
@@ -231,6 +235,13 @@ import SwiftUI
       StatusDataControllerProvider.shared.updateDataControllers(for: newBookmarks, client: client)
       bookmarks.append(contentsOf: newBookmarks)
       statusesState = .display(statuses: bookmarks, nextPageState: .hasNextPage)
+    case .scheduled:
+      guard let nextPageId = scheduledNextPage?.maxId else { return }
+      let newScheduledStatus: [ScheduledStatus]
+      (newScheduledStatus, scheduledNextPage) = try await client.getWithLink(endpoint: ScheduledStatuses.scheduledStatuses(sinceId: nextPageId))
+      //StatusDataControllerProvider.shared.updateDataControllers(for: newBookmarks, client: client)
+      scheduledStatus.append(contentsOf: newScheduledStatus)
+      //statusesState = .display(statuses: bookmarks, nextPageState: .hasNextPage)
     }
   }
 
@@ -246,6 +257,8 @@ import SwiftUI
     case .bookmarks:
       statusesState = .display(statuses: bookmarks,
                                nextPageState: bookmarksNextPage != nil ? .hasNextPage : .none)
+    case .scheduled:
+      break
     }
   }
 
